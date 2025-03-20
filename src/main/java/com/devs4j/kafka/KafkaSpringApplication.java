@@ -1,5 +1,6 @@
 package com.devs4j.kafka;
 
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,10 +26,10 @@ public class KafkaSpringApplication implements CommandLineRunner {
 
     @KafkaListener(topics = "devs4j-topic", containerFactory = "listenerContainerFactory", groupId = "devs4j-group",
                     properties = {"max.poll.interval.ms: 4000", "max.poll.records: 10"})
-    public void listen(List<String> message){
+    public void listen(List<ConsumerRecord<String, String>> message){
         log.info("Start reading messages");
-        for (String msg : message){
-            log.info("Message received {} ", msg);
+        for (ConsumerRecord<String, String> msg : message){
+            log.info("Partition: {}, OffSet: {}, Key: {}, Value: {}", msg.partition(), msg.offset(), msg.key(), msg.value());
         }
         log.info("End reading messages");
     }
@@ -41,7 +42,7 @@ public class KafkaSpringApplication implements CommandLineRunner {
     public void run(String... args) throws Exception {
         //kafkaTemplate.send("devs4j-topic", "Sample message");
         for (int i = 0; i < 100; i++) {
-            kafkaTemplate.send("devs4j-topic", String.format("Sample message %d", i));
+            kafkaTemplate.send("devs4j-topic", String.valueOf(i), String.format("Sample message %d", i));
         }
         /*
         // Entrega del mensaje asincrona
